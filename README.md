@@ -18,6 +18,19 @@ This program is designed to optimize chains with an **even number of couplings**
 
 To find a detailed explanation of the physical problem, check [1] or [2]. 
 
+## Implementation
+
+These programs use PyGAD library [3] to implement genetic algorithms. The coupling constants are considered as genes and the transmission probability is used to build the fitness function.  
+
+## Contents
+- exp_gen.py: Script to generate and run genetic algorithms experiments. Takes the number of couplings and a directory name to save results as arguments. It generates a configuration file to run the algorithm and saves it along the results and scripts in the specified directory.
+  
+- average.py: Script containing the implementation of the genetic algorithm. It reads a provided configuration file and runs the experiment as many times as it is specified in it. It saves the solutions and fitness evolution history for each sample inside the directory listed in the configuration file. It also saves a table containing dimension, fidelity, generations and CPU time for each sample.
+  
+- gmod.py: module containing genetic algorithm related functions such as mutations, fitness functions, generation of genespaces, etc.
+  
+- ga_graphs.py: module containing different plotting functions to analyze obtained results.
+  
 ## References
 [1] - G. M. Nikolopoulos and I. Jex, Quantum State Transfer and Network Engineering. Berlin Springer, 2016
 
