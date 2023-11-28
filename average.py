@@ -24,13 +24,17 @@ import configparser
 
 # get parameters from config file
 thisfolder = os.path.dirname(os.path.abspath(__file__))
-initfile = os.path.join(thisfolder, str(sys.argv[1]))
+initfile = str(sys.argv[1])
 print(initfile)
 config = configparser.ConfigParser()
 config.read(initfile)
 
+# saving and running
+dirname = config.get("saving_and_running", "directory")
+n_samples = config.getint("saving_and_running", "number_of_samples")
+
 # system parameters
-nj = config.getint("system_parameters", "nj")
+nj = config.getint("system_parameters", "number_of_couplings")
 n = config.getint("system_parameters", "n")
 delta = config.getfloat("system_parameters", "delta")
 transmission_time = config.getfloat("system_parameters", "transmission_time")
@@ -75,6 +79,7 @@ mutation_args = [weak_change, strong_change_first, strong_change_rest]
 # on generation parameters
 og_print = config.getboolean("on_generation", "og_print")
 check_tol = config.getboolean("on_generation", "check_tol")
+histogram = config.getboolean("on_generation", "histogram")
 
 on_generation_parameters = [
     maxj,
@@ -83,7 +88,9 @@ on_generation_parameters = [
     fidelity_tolerance,
     check_tol,
     og_print,
+    dirname,
     beta_is_gene,
+    histogram
 ]
 
 # call construction functions
@@ -96,8 +103,6 @@ genespace = generate_gsp1(nj, maxj, beta_is_gene)
 stop_criteria = ["saturate_" + str(saturation), "reach_" +
                  str(fidelity_tolerance)]
 
-dirname = config.get("saving_and_running", "directory")
-n_samples = config.get("saving_and_running", "number_of_samples")
 
 filename = dirname + "/nvsmaxfid.dat"
 
