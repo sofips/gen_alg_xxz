@@ -20,7 +20,7 @@ To find a detailed explanation of the physical problem, check [1] or [2].
 
 ## Implementation
 
-These programs use PyGAD library [3] to implement genetic algorithms. The coupling constants are considered as genes and the transmission probability is used to build the fitness function.  
+These programs use PyGAD library [3] to implement genetic algorithms. The coupling constants are considered as genes and the transmission probability is used to build the fitness function.   
 
 ## Contents
 - exp_gen.py: Script to generate and run genetic algorithms experiments. Takes the number of couplings and a directory name to save results as arguments. It generates a configuration file to run the algorithm and saves it along the results and scripts in the specified directory.
@@ -35,3 +35,5 @@ These programs use PyGAD library [3] to implement genetic algorithms. The coupli
 [1] - G. M. Nikolopoulos and I. Jex, Quantum State Transfer and Network Engineering. Berlin Springer, 2016
 
 [2] - X.M. Zhang, Z.W. Cui, X. Wang, and M.H. Yung, “Automatic spin-chain learning to explore the quantum speed limit”
+
+[3] - Ahmed Fawzy Gad, "PyGAD: An Intuitive Genetic Algorithm Python Library". Documentation available at: https://pygad.readthedocs.io/en/latest/pygad.html
