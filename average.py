@@ -90,18 +90,16 @@ on_generation_parameters = [
     og_print,
     dirname,
     beta_is_gene,
-    histogram
+    histogram,
 ]
 
 # call construction functions
-on_generation = generation_func_constructor(generation_func, 
-                                            on_generation_parameters)
+on_generation = generation_func_constructor(generation_func, on_generation_parameters)
 fitness_func = fitness_func_constructor(j_fidelity, fidelity_args)
 mutation_type = mutation_func_constructor(adaptivemut, mutation_args)
 
 genespace = generate_gsp1(nj, maxj, beta_is_gene)
-stop_criteria = ["saturate_" + str(saturation), "reach_" +
-                 str(fidelity_tolerance)]
+stop_criteria = ["saturate_" + str(saturation), "reach_" + str(fidelity_tolerance)]
 
 
 filename = dirname + "/nvsmaxfid.dat"
@@ -110,12 +108,10 @@ with open(filename, "a") as f:
     for i in range(n_samples):
         writer = csv.writer(f, delimiter=" ")
 
-        solutions_fname = dirname + \
-            "/jn" + str(nj) + "sample" + str(i) + ".dat"
+        solutions_fname = dirname + "/jn" + str(nj) + "sample" + str(i) + ".dat"
         fitness_history_fname = (
-            dirname +
-            "/fitness_history_nj" + str(nj) + "_sample" + str(i) + ".dat"
-            )
+            dirname + "/fitness_history_nj" + str(nj) + "_sample" + str(i) + ".dat"
+        )
 
         t1 = time.time()
 
@@ -141,24 +137,20 @@ with open(filename, "a") as f:
 
         initial_instance.run()
 
-        solution, solution_fitness, solution_idx = \
-            initial_instance.best_solution()
+        solution, solution_fitness, solution_idx = initial_instance.best_solution()
 
         t2 = time.time()
         trun = t2 - t1
         maxg = initial_instance.generations_completed
-        
-        final_fidelity = fidelity(solution,
-                                  delta,
-                                  transmission_time,
-                                  beta_is_gene)
+
+        final_fidelity = fidelity(solution, delta, transmission_time, beta_is_gene)
 
         row = [
             nj,
             "{:.8f}".format(delta),
             "{:.8f}".format(final_fidelity),
             "{:.8f}".format(trun),
-            maxg
+            maxg,
         ]
         writer.writerow(row)
 
