@@ -156,93 +156,6 @@ def plot_all_samples(
     return True
 
 
-def get_heis_coefficients(J, delta=1.0):
-    """
-    Generates a vector with the projection of the different
-    eigenstates of the XXZ Hamiltonian in the first site
-    using the site-basis. Takes first half of the couplings
-    array as input. Used in the plot coefficients function.
-
-    Parameters:
-
-    J: coupling vector.
-    delta: anisotropy parameter to generate XXZ Hamiltonian
-
-    Returns:
-    c1i: array containing <1|E_i> elements
-    """
-
-    # set dimensions
-    nj = 2 * J.size
-    n = nj + 1
-
-    # symmetric array for couplings
-    H = np.full((n, n), 0.0)
-    JJ = np.zeros(nj)
-
-    for i in range(0, J.size, 1):
-        JJ[i] = J[i]
-        JJ[nj - i - 1] = J[i]
-
-    sumj = -0.25 * np.sum(JJ)
-
-    # generate XXZ hamiltonian
-
-    for i in range(0, n):
-        if i == 0:
-            H[i, i] = sumj + 0.5 * JJ[i]
-        elif i == n - 1:
-            H[i, i] = sumj + 0.5 * JJ[i - 1]
-        else:
-            H[i, i] = sumj + 0.5 * JJ[i] + 0.5 * JJ[i - 1]
-
-        H[i, i] = H[i, i] * delta
-
-    for i in range(0, n - 1):
-        H[i, i + 1] = JJ[i] * (-0.5)
-        H[i + 1, i] = H[i, i + 1]
-
-    # diagonalization of XXZ hamiltonian
-
-    (eigvals, eigvects) = la.eig(H)
-    c1i = np.full(n, 0.0)
-
-    for i in range(0, c1i.size):
-        c1i[i] = np.dot(eigvects[0, i], eigvects[0, i])
-
-    return c1i
-
-
-def plot_coefficients(files, delta=1.0):
-    """
-    Plots projections of the eigenstates of an XXZ hamiltonian over
-    the first site of a chain (<1|E_i>). Uses get_heis_coefficients
-    function to access elements of the XXZ matrix in the energy basis.
-
-    Parameters:
-        -files: list of files  for which to plot said coefficients
-        -delta: anisotropy parameter for XXZ hamiltonian
-    """
-
-    files = list(files)
-
-    figure, ax = plt.subplots(figsize=(12, 5))
-
-    for file in files:
-        data = np.genfromtxt(file)
-        data = data[:-1]
-        x = np.arange(0, 2 * len(data) + 1)
-        y = get_heis_coefficients(data)
-        ax.plot(x, y * y, "o-", label=file)
-
-    ax.set_xlabel("i")
-    ax.set_ylabel("|c_1|^2")
-    ax.legend()
-    ax.set_title("Coeficientes")
-
-    return True
-
-
 def spectrum(couplings_filename, spectrum_filename, delta=1.0):
     """
     Generates the energy spectrum and saves it in a file from the couplings of
@@ -323,7 +236,7 @@ def gen_enfiles(files, directory="", delta=1.0):
     return spectrum_files
 
 
-def plot_esp(files, couplings=True, directory="", delta=1.0):
+def plot_spectrum(files, couplings=True, directory="", delta=1.0):
     """
     Plots energy levels from coupling files, uses spectrum
     to generate the espectra files from couplings. If couplings
@@ -439,7 +352,7 @@ def plot_energy_differences(
 # one experiment for each)
 
 
-def contour(df, column="fitness", title=False):
+def contour(df, column="fidelity", title=False):
     """
     Generates contour plot from a dataframe, takes
     dimension and delta (anisotropy parameter) as
@@ -458,7 +371,7 @@ def contour(df, column="fitness", title=False):
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    if column == "fitness":
+    if column == "fidelity":
         vmin = 0.9
         vmax = 1
     elif column == "time":
@@ -487,7 +400,7 @@ def contour(df, column="fitness", title=False):
 def fix_delta_compare(dataframes, delta=1.0):
     """
     For a fixed delta value, plots the different atributes of
-    the results (fitness, cpu time and generations completed)
+    the results (fidelity, cpu time and generations completed)
     for a list of different dataframes
 
     Parameters:
@@ -501,12 +414,12 @@ def fix_delta_compare(dataframes, delta=1.0):
         ndelta = dataframe[dataframe["delta"] == delta]
 
         dim = ndelta["dimension"]
-        fitness = ndelta["fitness"]
+        fidelity = ndelta["fidelity"]
         time = ndelta["time"]
         generations = ndelta["generations"]
 
         # Plot column 1 vs column 2
-        axs[0, 0].plot(dim, fitness, "o-", label=dataframe.name)
+        axs[0, 0].plot(dim, fidelity, "o-", label=dataframe.name)
         axs[0, 0].set_xlabel("N. of couplings")
         axs[0, 0].set_ylabel("Fidelity")
         axs[0, 0].grid(True)
@@ -532,7 +445,7 @@ def fix_delta_compare(dataframes, delta=1.0):
     return True
 
 
-def fix_delta_plot(dataframes, delta, att="fitness"):
+def fix_delta_plot(dataframes, delta, att="fidelity"):
     """
     For a fixed delta value, plots one attribute of
     the results for chains with different number of
@@ -541,7 +454,7 @@ def fix_delta_plot(dataframes, delta, att="fitness"):
     Parameters:
         - dataframes: list of dataframes to compare
         - delta: anisotropy parameter
-        - att: attribute to plot (defaults to fitness)
+        - att: attribute to plot (defaults to fidelity)
     """
     axs = plt.figure()
 
@@ -562,7 +475,7 @@ def fix_delta_plot(dataframes, delta, att="fitness"):
     plt.legend()
 
 
-def fix_dim_plot(dataframes, dimension, att="fitness"):
+def fix_dim_plot(dataframes, dimension, att="fidelity"):
     """
     For a fixed length of chain value, plots one attribute of
     the results for different values of delta (anisotropy)
@@ -570,7 +483,7 @@ def fix_dim_plot(dataframes, dimension, att="fitness"):
     Parameters:
         - dataframes: list of dataframes to compare
         - dimension: number of couplings in the chain
-        - att: attribute to plot (defaults to fitness)
+        - att: attribute to plot (defaults to fidelity)
     """
     axs = plt.figure()
 
@@ -597,7 +510,7 @@ def fix_dim_plot(dataframes, dimension, att="fitness"):
 def compare_mean(
     dataframes,
     title=False,
-    attribute="fitness",
+    attribute="fidelity",
     labels=False,
     figsize=[12, 5],
     save=False,
@@ -609,7 +522,7 @@ def compare_mean(
     Parameters:
         - dataframes: list of dataframes to analyze
         - title: title for plot
-        - attribute: 'fitness', 'time' (CPU time) or 'generations'
+        - attribute: 'fidelity', 'time' (CPU time) or 'generations'
         - labels: labels to identify different dataframes
         - figsize: figure size
         - save: filename to save the plot. If no name is provided, defaults to False
@@ -664,7 +577,7 @@ def compare_maxmin(
     dataframes,
     maxmin="max",
     title=False,
-    attribute="fitness",
+    attribute="fidelity",
     labels=False,
     figsize=[12, 5],
     save=False,
@@ -677,7 +590,7 @@ def compare_maxmin(
         - dataframes: list of dataframes to analyze
         - maxmin: plot max or min value of the selected attribute
         - title: title for plot
-        - attribute: 'fitness', 'time' (CPU time) or 'generations'
+        - attribute: 'fidelity', 'time' (CPU time) or 'generations'
         - labels: labels to identify different dataframes. If false
             defaults to the list of dataframes
         - figsize: figure size
@@ -752,10 +665,10 @@ def summary_graph(
 
     grouped_df = df.groupby("dimension")
 
-    mean_fitness = grouped_df["fitness"].mean()
-    std_fitness = grouped_df["fitness"].std()
-    min_value_fitness = grouped_df["fitness"].min()
-    max_value_fitness = grouped_df["fitness"].max()
+    mean_fidelity = grouped_df["fidelity"].mean()
+    std_fidelity = grouped_df["fidelity"].std()
+    min_value_fidelity = grouped_df["fidelity"].min()
+    max_value_fidelity = grouped_df["fidelity"].max()
 
     mean_gen = grouped_df["generations"].mean()
     std_gen = grouped_df["generations"].std()
@@ -769,10 +682,10 @@ def summary_graph(
 
     stats = pd.DataFrame(
         {
-            "mean fitness": mean_fitness,
-            "sd fitness": std_fitness,
-            "min fitness": min_value_fitness,
-            "max fitness": max_value_fitness,
+            "mean fidelity": mean_fidelity,
+            "sd fidelity": std_fidelity,
+            "min fidelity": min_value_fidelity,
+            "max fidelity": max_value_fidelity,
             "mean generations": mean_gen,
             "sd generations": std_gen,
             "min generations": min_value_gen,
@@ -788,21 +701,21 @@ def summary_graph(
 
     plt.errorbar(
         stats["dimension"],
-        stats["mean fitness"],
-        yerr=stats["sd fitness"],
+        stats["mean fidelity"],
+        yerr=stats["sd fidelity"],
         fmt="o",
         label="average fidelity",
         capsize=4,
         zorder=-2,
     )
 
-    maxdf = df.groupby("dimension")["fitness"].max()
-    filtered_max = df[df["fitness"].isin(maxdf)]
+    maxdf = df.groupby("dimension")["fidelity"].max()
+    filtered_max = df[df["fidelity"].isin(maxdf)]
     filtered_max = filtered_max.reset_index()
 
     plt.plot(
         filtered_max["dimension"],
-        filtered_max["fitness"],
+        filtered_max["fidelity"],
         "--",
         label="max fidelity",
         linewidth=1.5,
@@ -812,21 +725,21 @@ def summary_graph(
 
     sc1 = plt.scatter(
         filtered_max["dimension"],
-        filtered_max["fitness"],
+        filtered_max["fidelity"],
         c=filtered_max["generations"],
         cmap="rainbow",
     )
 
     for j, txt in enumerate(filtered_max["generations"]):
-        plt.annotate(txt, (filtered_max["dimension"][j], filtered_max["fitness"][j]))
+        plt.annotate(txt, (filtered_max["dimension"][j], filtered_max["fidelity"][j]))
 
-    min_j = df.groupby("dimension")["fitness"].min()
-    filtered_min = df[df["fitness"].isin(min_j)]
+    min_j = df.groupby("dimension")["fidelity"].min()
+    filtered_min = df[df["fidelity"].isin(min_j)]
     filtered_min = filtered_min.reset_index()
 
     plt.plot(
         filtered_min["dimension"],
-        filtered_min["fitness"],
+        filtered_min["fidelity"],
         "--",
         label="min fidelity",
         linewidth=1.5,
@@ -836,13 +749,13 @@ def summary_graph(
 
     sc2 = plt.scatter(
         filtered_min["dimension"],
-        filtered_min["fitness"],
+        filtered_min["fidelity"],
         c=filtered_min["generations"],
         cmap="rainbow",
     )
 
     for i, txt in enumerate(filtered_min["generations"]):
-        plt.annotate(txt, (filtered_min["dimension"][i], filtered_min["fitness"][i]))
+        plt.annotate(txt, (filtered_min["dimension"][i], filtered_min["fidelity"][i]))
 
     plt.ylim(ylim_min, ylim_max)
     # Add labels and title
@@ -939,9 +852,9 @@ def access_best_solutions(
 
     for dimension in dimensions:
         ndim = dataframe[dataframe["dimension"] == dimension]
-        max_value_index_j_1 = ndim["fitness"].idxmax() - dimension + 20
-        max_value_fitness_j_1 = ndim["fitness"].max()
-        max_fitness_solution_j_1 = (
+        max_value_index_j_1 = ndim["fidelity"].idxmax() - dimension + 20
+        max_value_fidelity_j_1 = ndim["fidelity"].max()
+        max_fidelity_solution_j_1 = (
             directory
             + "/jn"
             + str(dimension)
@@ -953,12 +866,12 @@ def access_best_solutions(
         label = (
             extra_label
             + "fidelity ="
-            + str(max_value_fitness_j_1)
+            + str(max_value_fidelity_j_1)
             + ", N = "
             + str(dimension)
         )
 
-        files = files + [max_fitness_solution_j_1]
+        files = files + [max_fidelity_solution_j_1]
         labels = labels + [label]
 
     if return_labels:
