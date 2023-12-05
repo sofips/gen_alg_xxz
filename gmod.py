@@ -199,27 +199,6 @@ def generate_gauss_population(best_solution, popsize, maxj, sigma):
     return pop
 
 
-def ins_summary(ga_instance):
-    """
-    Generates a summary of an instance with the summary method from
-    Pygad and saves it in the provided directory together with the
-    evolution of the best fitness value over the generations.
-    """
-    orig_stdout = sys.stdout
-
-    summ_fname = (
-        "ga" + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "_summary.txt"
-    )
-
-    f = open(summ_fname, "w")
-    sys.stdout = f
-    ga_instance.summary()
-
-    sys.stdout = orig_stdout
-    f.close()
-    return True
-
-
 def generation_func(
     ga,
     maxj,
@@ -347,7 +326,11 @@ def diag_hxxz(J, delta=1.0):
 
     return eigvals, eigvects
 
-
+#################################################################
+#
+# fitness functions available
+#
+#################################################################
 def fidelity(J, delta=1.0, time=False, erase_last_gene=False):
     """
     Takes the eigenvectors and eigenvalues of a spin-chain
@@ -621,63 +604,6 @@ def j_fidelity(J, delta=1.0, time=False, b_is_gene=False, b=0.9):
     return f
 
 
-def j_fidelity_tnorm(J, delta=1.0, time=False, b_is_gene=False, b=0.9):
-    """
-    Parameters:
-    - J = couplings for xxz hamiltonian
-    - delta = anisotropy factor
-    - time = transmission time (if false, t = n where n is the size of the system)
-    - b_is_gene = if true, the weight of the couplings distance factor in fitness function is taken as a gene
-    - b = if b is not a gene, this sets its value
-
-    Returns:
-    - Fitness for the provided solution
-    """
-
-    if b_is_gene:
-        b = J[-1]
-        J = J[:-1]
-
-    (eigvals, eigvects) = diag_hxxz(J, delta)
-
-    n = eigvals.size
-
-    if time:
-        t = time
-    else:
-        t = n
-
-    c1cn = np.zeros(n)
-
-    for i in range(0, c1cn.size):
-        c1cn[i] = eigvects[0, i] * eigvects[n - 1, i]
-
-    f = 0.0
-    fr = 0.0
-    fi = 0.0
-
-    for i in range(0, n):
-        fr = fr + math.cos(eigvals[i] * t) * c1cn[i]
-        fi = fi + math.sin(eigvals[i] * t) * c1cn[i]
-
-    fr = np.real(fr)
-    fi = np.real(fi)
-
-    f = fr * fr + fi * fi
-
-    nj = (n - 1) // 2
-
-    ss = 0.0
-
-    for j in range(1, nj):
-        ss = ss + (J[j] - J[j - 1]) ** 2
-
-    ss = ss / t**2
-    a = 1 - b
-
-    f = f * (a + b * math.exp(-ss))
-
-    return f
 
 
 def j_mean_fidelity(J, delta=1.0, time=False, b_is_gene=False, b=0.9):
@@ -798,126 +724,6 @@ def j_meansq_fidelity(J, delta=1.0, time=False, b_is_gene=False, b=0.9):
     return f
 
 
-def triple_fidelity(J, delta=1.0, time=False, wen=0.25, wj=0.5):
-    """
-    Parameters:
-    - J = couplings for xxz hamiltonian
-    - delta = anisotropy factor
-    - time = transmission time (if false, t = n where n is the size of the system)
-    - b_is_gene = if true, the weight of the couplings distance factor in fitness function is taken as a gene
-    - b = if b is not a gene, this sets its value
-
-    Returns:
-    - Fitness for the provided solution
-    """
-
-    (eigvals, eigvects) = diag_hxxz(J, delta)
-
-    n = eigvals.size
-
-    if time:
-        t = time
-    else:
-        t = n
-
-    c1cn = np.zeros(n)
-
-    for i in range(0, c1cn.size):
-        c1cn[i] = eigvects[0, i] * eigvects[n - 1, i]
-
-    f = 0.0
-    fr = 0.0
-    fi = 0.0
-
-    for i in range(0, n):
-        fr = fr + math.cos(eigvals[i] * t) * c1cn[i]
-        fi = fi + math.sin(eigvals[i] * t) * c1cn[i]
-
-    fr = np.real(fr)
-    fi = np.real(fi)
-
-    f = fr * fr + fi * fi
-
-    # calculate e_factor
-    nj = n - 1
-
-    DeltaE = np.empty(nj // 5)
-    DeltaE_int = np.empty(nj // 5)
-    difs = np.empty(nj // 5)
-    eigvals = np.sort(eigvals)
-
-    for i in range(1, nj // 5):
-        DeltaE[i] = eigvals[i] - eigvals[i - 1]
-        DeltaE_int[i] = closest_odd_integer(DeltaE[i])
-        difs[i] = (abs(DeltaE[i] - DeltaE_int[i]) * t / np.pi) ** 2
-
-    ss = sum(difs) / n**2
-
-    exp_en = math.exp(-ss)
-
-    # calculate j_factor
-    nj = (n - 1) // 2
-
-    ss = 0.0
-
-    for j in range(1, nj):
-        ss = ss + (J[j] - J[j - 1]) ** 2
-
-    ss = ss / n**2
-
-    exp_j = math.exp(-ss)
-
-    wf = 1 - wen - wj
-
-    f = f * (wf + wen * exp_en + wj * exp_j)
-
-    return f
-
-
-def time_fidelity(J, delta=1.0, time=False, erase_last_gene=False):
-    """
-    Takes the eigenvectors and eigenvalues of a spin-chain
-    Hamiltonian and returns the transmission fidelity asociated
-    to said chain. If time = False, then the transmission time
-    is taken to be equal to the length of the chain. Otherwise,
-    specifify desired time. Adds a periodicity factor !!
-    """
-
-    if erase_last_gene:
-        J = J[:-1]
-
-    (eigvals, eigvects) = diag_hxxz(J, delta)
-
-    n = eigvals.size
-
-    if time:
-        t = time
-    else:
-        t = n
-
-    c1cn = np.zeros(n)
-
-    for i in range(0, c1cn.size):
-        c1cn[i] = eigvects[0, i] * eigvects[n - 1, i]
-
-    F = 0.0
-    Fr = 0.0
-    Fi = 0.0
-    F_total = 0.0
-
-    time_steps = np.arange(1, 10, 2)
-
-    for time_index in time_steps:
-        for i in range(0, n):
-            Fr = Fr + math.cos(eigvals[i] * time_index * t) * c1cn[i]
-            Fi = Fi + math.sin(eigvals[i] * time_index * t) * c1cn[i]
-
-        Fr = np.real(Fr)
-        Fi = np.real(Fi)
-        F = Fr * Fr + Fi * Fi
-        F_total += F * t ** (-time_index)
-
-    return F_total
 
 
 def fitness_func_constructor(fid_function, arguments):
