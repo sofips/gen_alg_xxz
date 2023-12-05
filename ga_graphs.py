@@ -229,7 +229,7 @@ def gen_enfiles(files, directory="", delta=1.0):
     spectrum_files = []  # empty list to save energy filenames
 
     for file in files:
-        spectrum_fname = directory + "/" + file[:-4] + "_spectrum.dat"
+        spectrum_fname = file[:-4] + "_spectrum.dat"
         spectrum(file, spectrum_fname, delta)
         spectrum_files.append(spectrum_fname)
 
@@ -262,25 +262,42 @@ def plot_spectrum(files, couplings=True, directory="", delta=1.0):
 
     if len(files) > 2 * nn:
         nn = nn + 1
-
+    
     fig, axs = plt.subplots(nn, 2, figsize=(10, 10))
-    k = 0
-    j = 0
-    i = 0
 
-    for file in files:
-        data = np.genfromtxt(file)
-        for value in enumerate(data):
-            axs[j, k].plot([0, ll], [value[1], value[1]], "r-")
+    if nn>1:
+        k = 0
+        j = 0
 
-        # Create a scatter plot
-        axs[j, k].set_xlabel("i")
-        axs[j, k].set_ylabel("E_i")
-        axs[j, k].legend()
-        axs[j, k].set_title("spectrum for " + file)
-        # plt.show()
-        j = j + k
-        k = (k + 1) % 2
+        for file in files:
+            data = np.genfromtxt(file)
+            for value in enumerate(data):
+                axs[j, k].plot([0, ll], [value[1], value[1]], "r-")
+
+            # Create a scatter plot
+            axs[j, k].set_xlabel("i")
+            axs[j, k].set_ylabel("E_i")
+            axs[j, k].legend()
+            axs[j, k].set_title("spectrum for " + file)
+            # plt.show()
+            j = j + k
+            k = (k + 1) % 2
+    else:
+        i = 0
+
+        for file in files:
+            data = np.genfromtxt(file)
+            for value in enumerate(data):
+                axs[i].plot([0, ll], [value[1], value[1]], "r-")
+
+            # Create a scatter plot
+            axs[i].set_xlabel("i")
+            axs[i].set_ylabel("E_i")
+            axs[i].legend()
+            axs[i].set_title("spectrum for " + file)
+            
+            i +=1
+            # plt.show()
 
     fig.tight_layout(h_pad=2, w_pad=2)
 
