@@ -777,7 +777,7 @@ def summary_graph(
     plt.ylim(ylim_min, ylim_max)
     # Add labels and title
     plt.xlabel("N")
-    plt.ylabel("Fidelidad")
+    plt.ylabel("fidelity")
     if title:
         plt.title(title + " (Fidelity)")
 
@@ -835,7 +835,7 @@ def summary_graph(
 
     # Set the labels and title of the plot
     axs[1].set_xlabel("N")
-    axs[1].set_ylabel("Gens")
+    axs[1].set_ylabel("Generations")
     axs[1].set_title("Generations")
     axs[1].grid(True)
 
