@@ -869,7 +869,8 @@ def access_best_solutions(
 
     for dimension in dimensions:
         ndim = dataframe[dataframe["dimension"] == dimension]
-        max_value_index_j_1 = ndim["fidelity"].idxmax() - dimension + 20
+        ndim = ndim.reset_index()
+        max_value_index_j_1 = ndim["fidelity"].idxmax() #- dimension + 20
         max_value_fidelity_j_1 = ndim["fidelity"].max()
         max_fidelity_solution_j_1 = (
             directory
