@@ -225,24 +225,55 @@ def generation_func(
 # hamiltonians and fidelity
 
 
-def hxxz(J, delta=1.0):
+def reflect(J, n):
     """
-    Takes as input a secuence of n/2 couplings, and constructs
-    and returns the hxxz Hamiltonian for the symmetrized
-    chain in the one excitation basis. Default Delta is set to
-    1, equivalent to the Heisenberg Hamiltonian
+    Creates center-symmetric array from first half of couplings (J),
+    for a chain of length n.
+
+    Parameters:
+        - J: First half of couplings, including the one corresponding
+        to the center of the chain
+        - n: length of the chain
+
     """
-    nj = 2 * J.size  # number of couplings
-    n = nj + 1  # actual number of elements in the chain
+    if np.mod(n, 2) == 0:
+        nj = n - 1  # number of couplings
+        JJ = np.zeros(nj)
+
+        for i in range(0, J.size - 1, 1):  # creates the symmetric chain
+            JJ[i] = J[i]
+            JJ[nj - i - 1] = J[i]
+
+        JJ[J.size - 1] = J[J.size - 1]
+
+    elif np.mod(n, 2) != 0:
+        nj = n - 1  # number of couplings
+        JJ = np.zeros(nj)
+
+        for i in range(0, J.size, 1):  # creates the symmetric chain
+            JJ[i] = J[i]
+            JJ[nj - i - 1] = J[i]
+
+    return JJ
+
+
+def hxxz(J, n, delta=1.0):
+    """
+    Constructs XXZ Hamiltonian in the one-excitation basis
+    from first half of couplings (full chain is symmetric).
+    Default value of the anisotropy parameter (Delta) is set to 1,
+    making the default system a Heisenberg Hamiltonian.
+
+    Parameters:
+        - J: First half of couplings
+        - n: length of the chain
+        - delta: anisotropy parameter
+    Returns:
+        - H: nxn array containing XXZ Hamiltonian
+    """
 
     H = np.full((n, n), 0.0)
-
-    JJ = np.zeros(nj)
-
-    for i in range(0, J.size, 1):  # creates the symmetric chain
-        JJ[i] = J[i]
-        JJ[nj - i - 1] = J[i]
-
+    JJ = reflect(J, n)
     sumj = -0.25 * np.sum(JJ)
 
     for i in range(0, n):
@@ -262,20 +293,30 @@ def hxxz(J, delta=1.0):
     return H
 
 
-def diag_hxxz(J, delta=1.0):
+def diag_hxxz(J, n, delta=1.0):
     """
-    Takes as input a secuence of n/2 couplings, and returns
-    the eigenvalues and eigenvectors for the hxxz
-    Hamiltonian. Default delta = 1, taking hxxz as the
-    Heisenberg Hamiltonian.
-    """
-    nj = 2 * J.size  # number of couplings
-    n = nj + 1  # actual number of elements in the chain
-    JJ = np.zeros(nj)
+    Diagonzalizes XXZ Hamiltonian in the one-excitation basis
+    from first half of couplings (full chain is symmetric).
+    Default value of the anisotropy parameter (Delta) is set to 1,
+    making the default system a Heisenberg Hamiltonian.
 
-    for i in range(0, J.size, 1):  # creates the symmetric chain
-        JJ[i] = J[i]
-        JJ[nj - i - 1] = J[i]
+    Parameters
+    ----------
+         - J: First half of couplings
+         - n: length of the chain
+         - delta: anisotropy parameter
+
+    Returns
+    -------
+        - eigvals: n size array containing XXZ Hamiltonian
+        eigenvalues
+        - eigvects: nxn size array containing XXZ Hamiltonian
+        eigenvectors as columns
+    """
+
+    JJ = reflect(J, n)
+
+    sumj = -0.25 * np.sum(JJ)
 
     d = np.ones(n)
     ds = np.ones(n - 1)
@@ -307,19 +348,32 @@ def diag_hxxz(J, delta=1.0):
 #################################################################
 
 
-def fidelity(J, delta=1.0, time=False, erase_last_gene=False):
+def fidelity(J, n, delta=1.0, time=False, erase_last_gene=False):
     """
-    Takes the eigenvectors and eigenvalues of a spin-chain
-    Hamiltonian and returns the transmission fidelity asociated
-    to said chain. If time = False, then the transmission time
-    is taken to be equal to the length of the chain. Otherwise,
-    specifify desired time
+    Returns transmission probability (|<1|n>|²) for an XXZ
+    Hamiltonian in the one-excitation basis for a given set
+    of couplings. It can also be used as fitness function
+    for the genetic algorithm.
+
+    Parameters:
+    ----------
+    - J = couplings for xxz hamiltonian
+    - n = length of the chain
+    - delta = anisotropy parameter (defaults to 1, i.e., Heisenberg Hamiltonian )
+    - time = transmission time (if false, t = n where n is the size of the system)
+    - erase_last_gene = erase last number of input vector J (to be used when
+    the provided solutions have been obtained with a genetic algorithm variant
+    that stores an extra gene not corresponding to a coupling)
+
+    Returns:
+    --------
+    -  F = Transmission probability (|<1|n>|²) for the provided system
     """
 
     if erase_last_gene:
         J = J[:-1]
 
-    (eigvals, eigvects) = diag_hxxz(J, delta)
+    (eigvals, eigvects) = diag_hxxz(J, n, delta)
 
     n = eigvals.size
 
@@ -349,19 +403,35 @@ def fidelity(J, delta=1.0, time=False, erase_last_gene=False):
     return F
 
 
-def fidelity_with_eig(J, delta=1.0, time=False, erase_last_gene=False):
+def fidelity_with_eig(J, n, delta=1.0, time=False, erase_last_gene=False):
     """
-    Takes the eigenvectors and eigenvalues of a spin-chain
-    Hamiltonian and returns the transmission fidelity asociated
-    to said chain. If time = False, then the transmission time
-    is taken to be equal to the length of the chain. Otherwise,
-    specifify desired time
+    Calculates transmission probability (|<1|n>|²) for an XXZ
+    Hamiltonian in the one-excitation basis for a given set
+    of couplings and the associted eigenvalues and eigenvectors.  
+    
+    Parameters:
+    ----------
+    - J = couplings for xxz hamiltonian
+    - n = length of the chain
+    - delta = anisotropy parameter (defaults to 1, i.e., Heisenberg Hamiltonian )
+    - time = transmission time (if false, t = n where n is the size of the system)
+    - erase_last_gene = erase last number of input vector J (to be used when
+    the provided solutions have been obtained with a genetic algorithm variant
+    that stores an extra gene not corresponding to a coupling)
+
+    Returns:
+    --------
+    - F = Transmission probability (|<1|n>|²) for the provided system
+    - eigvals = n size array containing XXZ Hamiltonian
+    eigenvalues
+    - eigvects = nxn size array containing XXZ Hamiltonian
+    eigenvectors as columns
     """
 
     if erase_last_gene:
         J = J[:-1]
 
-    (eigvals, eigvects) = diag_hxxz(J, delta)
+    (eigvals, eigvects) = diag_hxxz(J, n, delta)
 
     n = eigvals.size
 
@@ -391,24 +461,36 @@ def fidelity_with_eig(J, delta=1.0, time=False, erase_last_gene=False):
     return F, eigvals, eigvects
 
 
-def j_fidelity(J, delta=1.0, time=False, b_is_gene=False, b=0.9):
+def j_fidelity(J, n, delta=1.0, time=False, b_is_gene=False, b=0.9):
+    
     """
+    Fitness function based on transmission probability (|<1|n>|²) for an XXZ
+    Hamiltonian in the one-excitation basis for a given set
+    of couplings that also takes into account the "smoothness" of the
+    provided solutions. The weight of this property in the final fitness
+    of the solution is quantified by beta. Smoothness factor is constructed
+    using the square of the difference between consecutive couplings. 
+    
     Parameters:
+    ----------
     - J = couplings for xxz hamiltonian
-    - delta = anisotropy factor
+    - n = length of the chain
+    - delta = anisotropy parameter (defaults to 1, i.e., Heisenberg Hamiltonian )
     - time = transmission time (if false, t = n where n is the size of the system)
-    - b_is_gene = if true, the weight of the couplings distance factor in fitness function is taken as a gene
-    - b = if b is not a gene, this sets its value
+    - b_is_gene = the weight value for the "smoothness" of the solution is taken
+    as another gene in genetic algorithm
+    - b = fix weigth value
 
     Returns:
-    - Fitness for the provided solution
+    --------
+    - F = Solution fitness
     """
 
     if b_is_gene:
         b = J[-1]
         J = J[:-1]
 
-    (eigvals, eigvects) = diag_hxxz(J, delta)
+    (eigvals, eigvects) = diag_hxxz(J, n, delta)
 
     n = eigvals.size
 
@@ -450,24 +532,36 @@ def j_fidelity(J, delta=1.0, time=False, b_is_gene=False, b=0.9):
     return f
 
 
-def j_mean_fidelity(J, delta=1.0, time=False, b_is_gene=False, b=0.9):
+def j_mean_fidelity(J, n, delta=1.0, time=False, b_is_gene=False, b=0.9):
+    
     """
+    Fitness function based on transmission probability (|<1|n>|²) for an XXZ
+    Hamiltonian in the one-excitation basis for a given set
+    of couplings that also takes into account the "smoothness" of the
+    provided solutions. The weight of this property in the final fitness
+    of the solution is quantified by beta. Smoothness factor is constructed
+    using the difference between consecutive couplings (not squared). 
+    
     Parameters:
+    ----------
     - J = couplings for xxz hamiltonian
-    - delta = anisotropy factor
+    - n = length of the chain
+    - delta = anisotropy parameter (defaults to 1, i.e., Heisenberg Hamiltonian )
     - time = transmission time (if false, t = n where n is the size of the system)
-    - b_is_gene = if true, the weight of the couplings distance factor in fitness function is taken as a gene
-    - b = if b is not a gene, this sets its value
+    - b_is_gene = the weight value for the "smoothness" of the solution is taken
+    as another gene in genetic algorithm
+    - b = fix weigth value
 
     Returns:
-    - Fitness for the provided solution
+    --------
+    - F = Solution fitness
     """
 
     if b_is_gene:
         b = J[-1]
         J = J[:-1]
 
-    (eigvals, eigvects) = diag_hxxz(J, delta)
+    (eigvals, eigvects) = diag_hxxz(J, n, delta)
 
     n = eigvals.size
 
@@ -509,24 +603,36 @@ def j_mean_fidelity(J, delta=1.0, time=False, b_is_gene=False, b=0.9):
     return f
 
 
-def j_meansq_fidelity(J, delta=1.0, time=False, b_is_gene=False, b=0.9):
+def j_meansq_fidelity(J, n, delta=1.0, time=False, b_is_gene=False, b=0.9):
+    
     """
+    Fitness function based on transmission probability (|<1|n>|²) for an XXZ
+    Hamiltonian in the one-excitation basis for a given set
+    of couplings that also takes into account the "smoothness" of the
+    provided solutions. The weight of this property in the final fitness
+    of the solution is quantified by beta. Smoothness factor is constructed
+    using the square of the difference of the square of consecutive couplings. 
+    
     Parameters:
+    ----------
     - J = couplings for xxz hamiltonian
-    - delta = anisotropy factor
+    - n = length of the chain
+    - delta = anisotropy parameter (defaults to 1, i.e., Heisenberg Hamiltonian )
     - time = transmission time (if false, t = n where n is the size of the system)
-    - b_is_gene = if true, the weight of the couplings distance factor in fitness function is taken as a gene
-    - b = if b is not a gene, this sets its value
+    - b_is_gene = the weight value for the "smoothness" of the solution is taken
+    as another gene in genetic algorithm
+    - b = fix weigth value
 
     Returns:
-    - Fitness for the provided solution
+    --------
+    - F = Solution fitness
     """
 
     if b_is_gene:
         b = J[-1]
         J = J[:-1]
 
-    (eigvals, eigvects) = diag_hxxz(J, delta)
+    (eigvals, eigvects) = diag_hxxz(J, n, delta)
 
     n = eigvals.size
 

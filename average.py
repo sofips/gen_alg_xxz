@@ -41,7 +41,7 @@ transmission_time = config.getfloat("system_parameters", "transmission_time")
 beta_is_gene = config.getboolean("system_parameters", "beta_is_gene")
 beta = config.getfloat("system_parameters", "beta")
 
-fidelity_args = [delta, transmission_time, beta_is_gene, beta]
+fidelity_args = [n, delta, transmission_time, beta_is_gene, beta]
 
 
 # genetic algorithm parameters
