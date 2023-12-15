@@ -14,7 +14,7 @@ directory = sys.argv[2]
 script = "average.py"
 module = "gmod.py"
 
-number_of_samples = 10  # number of times the experiment is repeated
+number_of_samples = 2  # number of times the experiment is repeated
 
 # creates instance of ConfigParser
 config = configparser.ConfigParser()

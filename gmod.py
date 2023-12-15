@@ -153,18 +153,20 @@ def closest_odd_integer(number):
         return next_odd
 
 
-def generate_gsp1(no_of_couplings, maxj, b_is_gene=False):
+def generate_gsp1(n, maxj, b_is_gene=False):
     """
     Generation of genespace
     Parameters:
-        - number of couplings (nj)
+        - n = chain length
         - maxj: max. value for couplings
     Return:
         - genespace: of size nj//2
     """
     genespace = []
 
-    for i in range(0, no_of_couplings // 2):
+    nj_genes = (n - 1) // 2 + (1 - n % 2)
+
+    for i in range(0, nj_genes):
         genespace = genespace + [{"low": 0, "high": maxj}]
 
     if b_is_gene:
@@ -174,6 +176,7 @@ def generate_gsp1(no_of_couplings, maxj, b_is_gene=False):
 
 def generation_func(
     ga,
+    n,
     maxj,
     time,
     delta,
@@ -201,7 +204,7 @@ def generation_func(
 
     solution, solution_fitness, solution_idx = ga.best_solution()
 
-    fid = fidelity(solution, delta, time, erase_last_gene)
+    fid = fidelity(solution, n, delta, time, erase_last_gene)
 
     if histogram and (
         ga.generations_completed == 1 or ga.generations_completed % 5 == 0
@@ -407,8 +410,8 @@ def fidelity_with_eig(J, n, delta=1.0, time=False, erase_last_gene=False):
     """
     Calculates transmission probability (|<1|n>|²) for an XXZ
     Hamiltonian in the one-excitation basis for a given set
-    of couplings and the associted eigenvalues and eigenvectors.  
-    
+    of couplings and the associted eigenvalues and eigenvectors.
+
     Parameters:
     ----------
     - J = couplings for xxz hamiltonian
@@ -462,15 +465,14 @@ def fidelity_with_eig(J, n, delta=1.0, time=False, erase_last_gene=False):
 
 
 def j_fidelity(J, n, delta=1.0, time=False, b_is_gene=False, b=0.9):
-    
     """
     Fitness function based on transmission probability (|<1|n>|²) for an XXZ
     Hamiltonian in the one-excitation basis for a given set
     of couplings that also takes into account the "smoothness" of the
     provided solutions. The weight of this property in the final fitness
     of the solution is quantified by beta. Smoothness factor is constructed
-    using the square of the difference between consecutive couplings. 
-    
+    using the square of the difference between consecutive couplings.
+
     Parameters:
     ----------
     - J = couplings for xxz hamiltonian
@@ -533,15 +535,14 @@ def j_fidelity(J, n, delta=1.0, time=False, b_is_gene=False, b=0.9):
 
 
 def j_mean_fidelity(J, n, delta=1.0, time=False, b_is_gene=False, b=0.9):
-    
     """
     Fitness function based on transmission probability (|<1|n>|²) for an XXZ
     Hamiltonian in the one-excitation basis for a given set
     of couplings that also takes into account the "smoothness" of the
     provided solutions. The weight of this property in the final fitness
     of the solution is quantified by beta. Smoothness factor is constructed
-    using the difference between consecutive couplings (not squared). 
-    
+    using the difference between consecutive couplings (not squared).
+
     Parameters:
     ----------
     - J = couplings for xxz hamiltonian
@@ -604,15 +605,14 @@ def j_mean_fidelity(J, n, delta=1.0, time=False, b_is_gene=False, b=0.9):
 
 
 def j_meansq_fidelity(J, n, delta=1.0, time=False, b_is_gene=False, b=0.9):
-    
     """
     Fitness function based on transmission probability (|<1|n>|²) for an XXZ
     Hamiltonian in the one-excitation basis for a given set
     of couplings that also takes into account the "smoothness" of the
     provided solutions. The weight of this property in the final fitness
     of the solution is quantified by beta. Smoothness factor is constructed
-    using the square of the difference of the square of consecutive couplings. 
-    
+    using the square of the difference of the square of consecutive couplings.
+
     Parameters:
     ----------
     - J = couplings for xxz hamiltonian

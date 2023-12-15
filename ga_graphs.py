@@ -106,7 +106,7 @@ def plot_normalized_couplings(
 
 def plot_all_samples(
     directory,
-    dimension,
+    n,
     fid_limit=0.0,
     title=False,
     ns=10,
@@ -119,7 +119,7 @@ def plot_all_samples(
     the label of each plot.
     Parameters:
         - directory: from which to extract the samples
-        - dimension: number of couplings of the system which samples are being plotted
+        - n: chain length
         - fid_limit: if a number is specified only samples with fidelity above it are
           plotted. Defaults to 0 (all samples plotted)
         - title: title to add to plot
@@ -135,12 +135,12 @@ def plot_all_samples(
     samples = np.arange(0, ns, 1)
 
     for sample in samples:
-        file = directory + "/jn" + str(dimension) + "sample" + str(sample) + ".dat"
+        file = directory + "/jn" + str(n) + "sample" + str(sample) + ".dat"
         data = np.genfromtxt(file)
-        nj = len(data) * 2
+        nj = n-1
         x = np.arange(1, len(data) + 1)
         y = data
-        fid = fidelity(data, delta, transmission_time, beta_is_gene)
+        fid = fidelity(data, n, delta, transmission_time, beta_is_gene)
         label = "Sample {} with fidelity = {}".format(sample, fid)
         if fid > fid_limit:
             ax.plot(x, y, "o-", label=label)
