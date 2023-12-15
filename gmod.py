@@ -9,6 +9,7 @@ import scipy.linalg as la
 import csv
 import os
 import matplotlib.pyplot as plt
+
 # Mutation functions
 
 
@@ -171,34 +172,6 @@ def generate_gsp1(no_of_couplings, maxj, b_is_gene=False):
     return genespace
 
 
-def generate_gauss_population(best_solution, popsize, maxj, sigma):
-    """
-    Parameters:
-        - best_solution: Solution around which the new pop
-          is centered.
-        - popsize: Size of new population
-        - maxj: maxvalue for genes
-        - sigma: percentage of original gene used as width.
-    Returns:
-        - pop = New population of random genes centered
-          around best_solution with gaussian distribution
-    """
-    n_genes = np.size(best_solution)
-    pop = best_solution
-    for i in range(popsize):
-        individual = np.zeros(n_genes)
-        for j in range(n_genes):
-            individual[j] = random.gauss(
-                best_solution[j], best_solution[j] * sigma / 100
-            )
-            while individual[j] > maxj:
-                individual[j] = individual[j] * 0.99
-            while individual[j] < 0.0:
-                individual[j] = individual[j] + 0.1
-        pop = np.vstack([pop, individual])
-    return pop
-
-
 def generation_func(
     ga,
     maxj,
@@ -209,7 +182,7 @@ def generation_func(
     og_print,
     directory,
     erase_last_gene=False,
-    histogram=False
+    histogram=False,
 ):
     pop = ga.population
 
@@ -233,7 +206,7 @@ def generation_func(
     if histogram and (
         ga.generations_completed == 1 or ga.generations_completed % 5 == 0
     ):
-        population_histogram(ga,directory)
+        population_histogram(ga, directory)
 
     if og_print:
         print("Generation", ga.generations_completed)
@@ -326,11 +299,14 @@ def diag_hxxz(J, delta=1.0):
 
     return eigvals, eigvects
 
+
 #################################################################
 #
 # fitness functions available
 #
 #################################################################
+
+
 def fidelity(J, delta=1.0, time=False, erase_last_gene=False):
     """
     Takes the eigenvectors and eigenvalues of a spin-chain
@@ -415,136 +391,6 @@ def fidelity_with_eig(J, delta=1.0, time=False, erase_last_gene=False):
     return F, eigvals, eigvects
 
 
-def en_fidelity(J, delta=1.0, time=False, b_is_gene=False, b=0.9):
-    """
-    Parameters:
-    - J = couplings for xxz hamiltonian
-    - delta = anisotropy factor
-    - time = transmission time (if false, t = n where n is the size of the system)
-    - b_is_gene = if true, the weight of the energy factor in fitness function is taken as a gene
-    - b = if b is not a gene, this sets its value
-
-    Returns:
-    - Fitness for the provided solution
-    """
-
-    if b_is_gene:
-        J = J[:-1]
-        b = J[-1]
-
-    (eigvals, eigvects) = diag_hxxz(J, delta)
-
-    n = eigvals.size
-
-    if time:
-        t = time
-    else:
-        t = n
-
-    c1cn = np.zeros(n)
-
-    for i in range(0, c1cn.size):
-        c1cn[i] = eigvects[0, i] * eigvects[n - 1, i]
-
-    f = 0.0
-    fr = 0.0
-    fi = 0.0
-
-    for i in range(0, n):
-        fr = fr + math.cos(eigvals[i] * t) * c1cn[i]
-        fi = fi + math.sin(eigvals[i] * t) * c1cn[i]
-
-    fr = np.real(fr)
-    fi = np.real(fi)
-
-    f = fr * fr + fi * fi
-
-    nj = n - 1
-
-    DeltaE = np.empty(nj)
-    DeltaE_int = np.empty(nj)
-    difs = np.empty(nj)
-    eigvals = np.sort(eigvals)
-
-    for i in range(1, nj):
-        DeltaE[i] = eigvals[i] - eigvals[i - 1]
-        DeltaE_int[i] = closest_odd_integer(DeltaE[i])
-        difs[i] = abs(DeltaE[i] - DeltaE_int[i])
-
-    ss = np.mean(difs)
-
-    a = 1 - b
-
-    f = f * (a + b * math.exp(-ss))
-
-    return f
-
-
-def en_fidelity_renorm(J, delta=1.0, time=False, b_is_gene=False, b=0.9):
-    """
-    Parameters:
-    - J = couplings for xxz hamiltonian
-    - delta = anisotropy factor
-    - time = transmission time (if false, t = n where n is the size of the system)
-    - b_is_gene = if true, the weight of the energy factor in fitness function is taken as a gene
-    - b = if b is not a gene, this sets its value
-
-    Returns:
-    - Fitness for the provided solution
-    """
-
-    if b_is_gene:
-        J = J[:-1]
-        b = J[-1]
-
-    (eigvals, eigvects) = diag_hxxz(J, delta)
-
-    n = eigvals.size
-
-    if time:
-        t = time
-    else:
-        t = n
-
-    c1cn = np.zeros(n)
-
-    for i in range(0, c1cn.size):
-        c1cn[i] = eigvects[0, i] * eigvects[n - 1, i]
-
-    f = 0.0
-    fr = 0.0
-    fi = 0.0
-
-    for i in range(0, n):
-        fr = fr + math.cos(eigvals[i] * t) * c1cn[i]
-        fi = fi + math.sin(eigvals[i] * t) * c1cn[i]
-
-    fr = np.real(fr)
-    fi = np.real(fi)
-
-    f = fr * fr + fi * fi
-
-    nj = n - 1
-
-    DeltaE = np.empty(nj // 5)
-    DeltaE_int = np.empty(nj // 5)
-    difs = np.empty(nj // 5)
-    eigvals = np.sort(eigvals)
-
-    for i in range(1, nj // 5):
-        DeltaE[i] = eigvals[i] - eigvals[i - 1]
-        DeltaE_int[i] = closest_odd_integer(DeltaE[i])
-        difs[i] = (abs(DeltaE[i] - DeltaE_int[i]) * t / np.pi) ** 2
-
-    ss = sum(difs) / n**2
-
-    a = 1 - b
-
-    f = f * (a + b * math.exp(-ss))
-
-    return f
-
-
 def j_fidelity(J, delta=1.0, time=False, b_is_gene=False, b=0.9):
     """
     Parameters:
@@ -602,8 +448,6 @@ def j_fidelity(J, delta=1.0, time=False, b_is_gene=False, b=0.9):
     f = f * (a + b * math.exp(-ss))
 
     return f
-
-
 
 
 def j_mean_fidelity(J, delta=1.0, time=False, b_is_gene=False, b=0.9):
@@ -724,8 +568,6 @@ def j_meansq_fidelity(J, delta=1.0, time=False, b_is_gene=False, b=0.9):
     return f
 
 
-
-
 def fitness_func_constructor(fid_function, arguments):
     """
     Parameters:
@@ -812,8 +654,8 @@ def fitness_history_to_file(ga_instance, filename):
 ## population fidelity distributions
 
 
-def population_histogram(ga,directory):
-    '''
+def population_histogram(ga, directory):
+    """
     For a given instance of genetic algorithm, creates a directory
     called hist_frames and plots histograms of population's fidelity
     at the current generation. Is called from inside on_generation
@@ -824,11 +666,11 @@ def population_histogram(ga,directory):
     - directory: to save frames
     Returns:
     - True: if histogram was correctly plotted
-    '''
+    """
 
     # creates directory if it doesnt exist
 
-    dirname = directory +'/hist_frames'
+    dirname = directory + "/hist_frames"
     isExist = os.path.exists(dirname)
     if not isExist:
         os.mkdir(dirname)
@@ -840,28 +682,28 @@ def population_histogram(ga,directory):
     # plot histogram
     figure, ax = plt.subplots(figsize=(12, 4))
     nbins = 100
-    hist, bins, c = ax.hist(pop_fit, bins=nbins, range=[0, 1],
-                            edgecolor="black",
-                            color="#DDFFDD")
+    hist, bins, c = ax.hist(
+        pop_fit, bins=nbins, range=[0, 1], edgecolor="black", color="#DDFFDD"
+    )
 
     # configure yticks to show percentage of total pop. number
     max_value = int(np.max(hist))
     y = np.linspace(int(0), max_value, 9, dtype=int)
     ax.set_yticks(y)
-    ax.set_yticklabels(y*100/ga.sol_per_pop)
+    ax.set_yticklabels(y * 100 / ga.sol_per_pop)
 
     x = [0]
-    x = x + [i/10 for i in np.arange(0, 10, 1)]
+    x = x + [i / 10 for i in np.arange(0, 10, 1)]
     ax.set_xticks(x)
 
     # set grid, title and labels
     plt.grid()
-    plt.title('Population distribution for gen. number ' + str(ng).zfill(3))
-    ax.set_xlabel('Fidelity')
-    ax.set_ylabel('Population percentage')
+    plt.title("Population distribution for gen. number " + str(ng).zfill(3))
+    ax.set_xlabel("Fidelity")
+    ax.set_ylabel("Population percentage")
 
     # save to file
-    filename = dirname + '/hist_frame'+str(ng).zfill(3)+'.png'
+    filename = dirname + "/hist_frame" + str(ng).zfill(3) + ".png"
     plt.savefig(filename)
 
     return True
