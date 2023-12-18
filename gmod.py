@@ -519,7 +519,7 @@ def j_fidelity(J, n, delta=1.0, time=False, b_is_gene=False, b=0.9):
 
     f = fr * fr + fi * fi
 
-    nj = (n - 1) // 2
+    nj = len(J) #(n - 1) // 2
 
     ss = 0.0
 
