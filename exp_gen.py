@@ -25,19 +25,22 @@ number_of_couplings = n - 1
 delta = 1.0
 transmission_time = n
 
-# if using a fitness function with weight factor beta
-beta_is_gene = False  # if True, take weight factor as gene
-beta = 0.9  # else, fix weight factor
+
 
 # genetic algorithm parameters (used by PyGAD library, see Documentation)
 num_generations = 2000
-num_genes = number_of_couplings // 2 + (1-n%2) + 1 * beta_is_gene
 sol_per_pop = 1000
 maxj = n
 init_range_low = 1.0
 init_range_high = maxj
 fidelity_tolerance = 0.99
 saturation = 20
+smooth_solution = True # mark as true to add smoothing factor to fitness
+
+# if using smooth_solution, configure smoothing weight (if not these parameters are ignored)
+beta_is_gene = False  # if True, take weight factor as gene
+beta = 0.9  # else, fix weight factor
+num_genes = number_of_couplings // 2 + (1 - n % 2) + 1 * beta_is_gene
 
 # crossover and parent selection (used by PyGAD library, see Documentation)
 num_parents_mating = sol_per_pop // 5
@@ -73,8 +76,6 @@ config["system_parameters"] = {
     "n": str(n),
     "delta": str(delta),
     "transmission_time": str(transmission_time),
-    "beta_is_gene": str(beta_is_gene),
-    "beta": str(beta),
 }
 
 config["ga_initialization"] = {
@@ -86,6 +87,9 @@ config["ga_initialization"] = {
     "init_range_high": str(init_range_high),
     "fidelity_tolerance": str(fidelity_tolerance),
     "saturation": str(saturation),
+    "smooth_solution": str(smooth_solution),
+    "beta_is_gene": str(beta_is_gene),
+    "beta": str(beta)
 }
 
 config["parent_selection"] = {

@@ -38,11 +38,6 @@ nj = config.getint("system_parameters", "number_of_couplings")
 n = config.getint("system_parameters", "n")
 delta = config.getfloat("system_parameters", "delta")
 transmission_time = config.getfloat("system_parameters", "transmission_time")
-beta_is_gene = config.getboolean("system_parameters", "beta_is_gene")
-beta = config.getfloat("system_parameters", "beta")
-
-fidelity_args = [n, delta, transmission_time, beta_is_gene, beta]
-
 
 # genetic algorithm parameters
 num_generations = config.getint("ga_initialization", "num_generations")
@@ -53,6 +48,11 @@ init_range_low = config.getfloat("ga_initialization", "init_range_low")
 init_range_high = config.getfloat("ga_initialization", "init_range_high")
 fidelity_tolerance = config.getfloat("ga_initialization", "fidelity_tolerance")
 saturation = config.getint("ga_initialization", "saturation")
+smooth_solution = config.getboolean("ga_initialization", "smooth_solution")
+beta_is_gene = config.getboolean("ga_initialization", "beta_is_gene")
+beta = config.getfloat("ga_initialization", "beta")
+
+fidelity_args = [n, delta, transmission_time, beta_is_gene, beta]
 
 # crossover and parent selection
 
@@ -96,8 +96,19 @@ on_generation_parameters = [
 
 # call construction functions
 on_generation = generation_func_constructor(generation_func, on_generation_parameters)
-fitness_func = fitness_func_constructor(j_fidelity, fidelity_args)
 mutation_type = mutation_func_constructor(adaptivemut, mutation_args)
+
+if smooth_solution:
+    fidelity_args = [n, delta, transmission_time, beta_is_gene, beta]
+    fitness_func = fitness_func_constructor(j_fidelity, fidelity_args)
+    print('Using transmission probability with extra smoothness factor as fitness')
+else:
+    fidelity_args = [n, delta, transmission_time, beta_is_gene]
+    fitness_func = fitness_func_constructor(fidelity, fidelity_args)
+    print('Using transmission probability as fitness')
+
+
+
 
 genespace = generate_gsp1(n, maxj, beta_is_gene)
 stop_criteria = ["saturate_" + str(saturation), "reach_" + str(fidelity_tolerance)]
@@ -147,7 +158,7 @@ with open(filename, "a") as f:
         final_fidelity = fidelity(solution, n, delta, transmission_time, beta_is_gene)
 
         row = [
-            nj,
+            n,
             "{:.8f}".format(delta),
             "{:.8f}".format(final_fidelity),
             "{:.8f}".format(trun),
