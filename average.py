@@ -41,7 +41,7 @@ transmission_time = config.getfloat("system_parameters", "transmission_time")
 beta_is_gene = config.getboolean("system_parameters", "beta_is_gene")
 beta = config.getfloat("system_parameters", "beta")
 
-fidelity_args = [delta, transmission_time, beta_is_gene, beta]
+fidelity_args = [n, delta, transmission_time, beta_is_gene, beta]
 
 
 # genetic algorithm parameters
@@ -82,6 +82,7 @@ check_tol = config.getboolean("on_generation", "check_tol")
 histogram = config.getboolean("on_generation", "histogram")
 
 on_generation_parameters = [
+    n,
     maxj,
     transmission_time,
     delta,
@@ -98,7 +99,7 @@ on_generation = generation_func_constructor(generation_func, on_generation_param
 fitness_func = fitness_func_constructor(j_fidelity, fidelity_args)
 mutation_type = mutation_func_constructor(adaptivemut, mutation_args)
 
-genespace = generate_gsp1(nj, maxj, beta_is_gene)
+genespace = generate_gsp1(n, maxj, beta_is_gene)
 stop_criteria = ["saturate_" + str(saturation), "reach_" + str(fidelity_tolerance)]
 
 
@@ -108,9 +109,9 @@ with open(filename, "a") as f:
     for i in range(n_samples):
         writer = csv.writer(f, delimiter=" ")
 
-        solutions_fname = dirname + "/jn" + str(nj) + "sample" + str(i) + ".dat"
+        solutions_fname = dirname + "/jn" + str(n) + "sample" + str(i) + ".dat"
         fitness_history_fname = (
-            dirname + "/fitness_history_nj" + str(nj) + "_sample" + str(i) + ".dat"
+            dirname + "/fitness_history_n" + str(n) + "_sample" + str(i) + ".dat"
         )
 
         t1 = time.time()
@@ -143,7 +144,7 @@ with open(filename, "a") as f:
         trun = t2 - t1
         maxg = initial_instance.generations_completed
 
-        final_fidelity = fidelity(solution, delta, transmission_time, beta_is_gene)
+        final_fidelity = fidelity(solution, n, delta, transmission_time, beta_is_gene)
 
         row = [
             nj,

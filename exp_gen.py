@@ -20,8 +20,8 @@ number_of_samples = 10  # number of times the experiment is repeated
 config = configparser.ConfigParser()
 
 # system parameters
-number_of_couplings = int(sys.argv[1])
-n = number_of_couplings + 1
+n = int(sys.argv[1])
+number_of_couplings = n - 1
 delta = 1.0
 transmission_time = n
 
@@ -31,8 +31,8 @@ beta = 0.9  # else, fix weight factor
 
 # genetic algorithm parameters (used by PyGAD library, see Documentation)
 num_generations = 2000
-num_genes = number_of_couplings // 2 + 1 * beta_is_gene
-sol_per_pop = 500
+num_genes = number_of_couplings // 2 + (1-n%2) + 1 * beta_is_gene
+sol_per_pop = 1000
 maxj = n
 init_range_low = 1.0
 init_range_high = maxj
@@ -56,8 +56,8 @@ strong_change_first = 0.1  # 10% percent mutation for first chain element
 strong_change_rest = 0.05  # 5% mutation for the rest of the chain
 
 # on generation parameters
-og_print = True    # Print best solution, fidelity and fitness every generation
-check_tol = True   # Check if fidelity reaches certain value every generation
+og_print = True  # Print best solution, fidelity and fitness every generation
+check_tol = True  # Check if fidelity reaches certain value every generation
 histogram = False  # Exports a histogram with the population's fitness
 
 # generation of config file
@@ -126,7 +126,7 @@ if not isExist:
 else:
     print("Warning: Directory already exists")
 
-config_name = directory + "/ga" + str(number_of_couplings) + ".ini"
+config_name = directory + "/ga" + str(n) + ".ini"
 with open(config_name, "w") as configfile:
     config.write(configfile)
 
