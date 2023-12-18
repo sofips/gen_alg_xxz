@@ -109,9 +109,9 @@ with open(filename, "a") as f:
     for i in range(n_samples):
         writer = csv.writer(f, delimiter=" ")
 
-        solutions_fname = dirname + "/jn" + str(nj) + "sample" + str(i) + ".dat"
+        solutions_fname = dirname + "/jn" + str(n) + "sample" + str(i) + ".dat"
         fitness_history_fname = (
-            dirname + "/fitness_history_nj" + str(nj) + "_sample" + str(i) + ".dat"
+            dirname + "/fitness_history_n" + str(n) + "_sample" + str(i) + ".dat"
         )
 
         t1 = time.time()

@@ -14,7 +14,7 @@ directory = sys.argv[2]
 script = "average.py"
 module = "gmod.py"
 
-number_of_samples = 2  # number of times the experiment is repeated
+number_of_samples = 10  # number of times the experiment is repeated
 
 # creates instance of ConfigParser
 config = configparser.ConfigParser()
@@ -32,7 +32,7 @@ beta = 0.9  # else, fix weight factor
 # genetic algorithm parameters (used by PyGAD library, see Documentation)
 num_generations = 2000
 num_genes = number_of_couplings // 2 + (1-n%2) + 1 * beta_is_gene
-sol_per_pop = 500
+sol_per_pop = 1000
 maxj = n
 init_range_low = 1.0
 init_range_high = maxj
