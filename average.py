@@ -107,6 +107,8 @@ else:
     fitness_func = fitness_func_constructor(fidelity, fidelity_args)
     print('Using transmission probability as fitness')
 
+# In case a different fitness function is needed, use:
+# fitness_func = fitness_func_constructor(new_fitness_function, new_fitness_arguments)
 
 
 
