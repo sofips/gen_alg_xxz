@@ -13,21 +13,25 @@ import matplotlib.cm as cm  # matplotlib's color map library
 from gmod import *
 from mpl_toolkits.mplot3d import Axes3D
 
-# ######################section 1###################################
+# ###################### section 1###################################
 # Functions to plot attributes of individual solutions such as
-# couplings, spectrum and energy differences. These functions take
-# coupling values obtained using main programs, generate associated
+# Exchange Coupling Coefficients, spectrum and energy differences.
+# These functions take Exchange Coupling Coefficients files or values
+# obtained using main programs as input and generate associated
 # Hamiltonians and plot extracted characteristics.
 ####################################################################
 
 
-def plot_couplings(files, labels=False, title=False, size=(8, 5), save=False):
+def plot_couplings(
+    files, labels=False, title="Exchange Coupling Coefficients", size=(8, 5), save=False
+):
     """
-    Graphs couplings from solution files.
+    Plots Exchange Coupling Coefficients from solution files.
+
     Parameters:
     - files: list of coupling files to plot (all in the same graph)
     - labels: list of labels (defaults to file names)
-    - title: defaults to 'Resulting couplings'
+    - title: defaults to 'Exchange Coupling Coefficients'
     - size: image size
     - save: file name to save plot (if no name is provided, plot is not saved)
     """
@@ -48,13 +52,9 @@ def plot_couplings(files, labels=False, title=False, size=(8, 5), save=False):
         ax.plot(x, y, "o-", label=label)
 
     ax.set_xlabel("i")
-    ax.set_ylabel("J_i")
+    ax.set_ylabel("$J_i$")
     ax.legend(loc="lower right")
-    ax.set_title("Resulting couplings")
-    ax.grid(True)
-
-    if title:
-        ax.set_title(title)
+    ax.set_title(title)
 
     if save:
         plt.savefig(save)
@@ -63,15 +63,19 @@ def plot_couplings(files, labels=False, title=False, size=(8, 5), save=False):
 
 
 def plot_normalized_couplings(
-    files, labels=False, title=False, size=(8, 5), save=False
+    files,
+    labels=False,
+    title="Exchange Coupling Coefficients (normalized)",
+    size=(8, 5),
+    save=False,
 ):
     """
-    Graphs couplings from solution files normalized with chain length.
+    Exchange Coupling Coefficients from solution files normalized with chain length.
 
     Parameters:
     - files: list of coupling files to plot (all in the same graph)
     - labels: list of labels (defaults to file names)
-    - title: defaults to 'Resulting couplings'
+    - title: defaults to 'Exchange Coupling Coefficients (normalized)'
     - size: image size
     - save: file name to save plot (if no name is provided, plot is not saved)
     """
@@ -84,18 +88,22 @@ def plot_normalized_couplings(
         file = files[i]
         label = labels[i]
         data = np.genfromtxt(file)
-        nj = len(data) * 2
-        x = np.arange(1, len(data) + 1) / nj
-        y = data / nj
-        ax.plot(x, y, "o-", label=label)
+        nj = len(data)
 
-    ax.set_title("Acoplamientos obtenidos")
+        if nj % 2 == 0:
+            n = 2 * nj
+        else:
+            n = 2 * nj - 1
+
+        x = np.arange(1, len(data) + 1) / n
+        y = data / n
+        ax.plot(x, y, "o-", label=label)
 
     if title:
         ax.set_title(title)
 
     ax.set_xlabel("i/N")
-    ax.set_ylabel("J_i")
+    ax.set_ylabel("$J_i$")
     ax.legend(loc="lower right")
 
     if save:
@@ -107,9 +115,9 @@ def plot_normalized_couplings(
 def plot_all_samples(
     directory,
     n,
+    ns=10,
     fid_limit=0.0,
     title=False,
-    ns=10,
     transmission_time=False,
     delta=1.0,
     beta_is_gene=False,
@@ -137,7 +145,7 @@ def plot_all_samples(
     for sample in samples:
         file = directory + "/jn" + str(n) + "sample" + str(sample) + ".dat"
         data = np.genfromtxt(file)
-        nj = n-1
+        nj = n - 1
         x = np.arange(1, len(data) + 1)
         y = data
         fid = fidelity(data, n, delta, transmission_time, beta_is_gene)
@@ -147,7 +155,7 @@ def plot_all_samples(
     if title:
         ax.set_title(title)
     else:
-        ax.set_title("Solutions obtained in {}".format(directory))
+        ax.set_title("Solutions in directory: {}".format(directory))
 
     ax.set_xlabel("i")
     ax.set_ylabel("J_i")
@@ -166,8 +174,6 @@ def spectrum(couplings_filename, spectrum_filename, delta=1.0):
         - spectrum_filename: file to save energy spectrum
         - delta = value of anisotropy parameter (optional, defaults to 1)
     """
-    line = 0
-
     J = np.genfromtxt(couplings_filename)
     nj = len(J) * 2
 
@@ -209,9 +215,10 @@ def spectrum(couplings_filename, spectrum_filename, delta=1.0):
 
 def gen_enfiles(files, directory="", delta=1.0):
     """
-    Generates a list of spectrum files from a list of coupling files
+    Generates spectrum files from a list of coupling files
     using spectrum function and saves a file with the spectrum of
-    the provided couplings associated hamiltonians.
+    the provided couplings associated hamiltonians. Returns the list
+    of spectrum filenames.
 
     Parameters:
         - files: list of coupling files
@@ -262,10 +269,10 @@ def plot_spectrum(files, couplings=True, directory="", delta=1.0):
 
     if len(files) > 2 * nn:
         nn = nn + 1
-    
+
     fig, axs = plt.subplots(nn, 2, figsize=(10, 10))
 
-    if nn>1:
+    if nn > 1:
         k = 0
         j = 0
 
@@ -295,8 +302,8 @@ def plot_spectrum(files, couplings=True, directory="", delta=1.0):
             axs[i].set_ylabel("E_i")
             axs[i].legend()
             axs[i].set_title("spectrum for " + file)
-            
-            i +=1
+
+            i += 1
             # plt.show()
 
     fig.tight_layout(h_pad=2, w_pad=2)
@@ -365,164 +372,7 @@ def plot_energy_differences(
 # dataframes summarizing different runs of main programs.
 ####################################################################
 
-# for contour.py (different chain lengths and delta values,
-# one experiment for each)
-
-
-def contour(df, column="fidelity", title=False):
-    """
-    Generates contour plot from a dataframe, takes
-    dimension and delta (anisotropy parameter) as
-    X and Y axis.
-    Parameters:
-        - df: dataframe to use
-        - column: column of df to use as Z axis
-        - title: title for the plot
-    """
-
-    Z = df.pivot_table(index="dimension", columns="delta", values=column).T.values
-    X_unique = np.sort(df.dimension.unique())
-    Y_unique = np.sort(df.delta.unique())
-    X, Y = np.meshgrid(X_unique, Y_unique)
-
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-
-    if column == "fidelity":
-        vmin = 0.9
-        vmax = 1
-    elif column == "time":
-        vmin = 0
-        vmax = 2000
-    elif column == "generations":
-        vmin = 0
-        vmax = 5000
-
-    cnt = plt.contourf(X, Y, Z, levels=20, cmap=cm.turbo, vmin=vmin, vmax=vmax)
-
-    if not title:
-        title = column + " " + df.name
-
-    ax.set_title(title)
-    ax.set_yticks(np.arange(0, 1, 0.1))
-    ax.set_xticks(X_unique)
-
-    ax.set_xlabel("Number of couplings")
-    ax.set_ylabel("Delta")
-
-    plt.colorbar(label=column)
-    plt.grid(True)
-
-
-def fix_delta_compare(dataframes, delta=1.0):
-    """
-    For a fixed delta value, plots the different atributes of
-    the results (fidelity, cpu time and generations completed)
-    for a list of different dataframes
-
-    Parameters:
-        - dataframes: list of dataframes to compare
-        - delta: anisotropy parameter
-    """
-
-    fig, axs = plt.subplots(2, 2, figsize=(9, 6))
-
-    for dataframe in dataframes:
-        ndelta = dataframe[dataframe["delta"] == delta]
-
-        dim = ndelta["dimension"]
-        fidelity = ndelta["fidelity"]
-        time = ndelta["time"]
-        generations = ndelta["generations"]
-
-        # Plot column 1 vs column 2
-        axs[0, 0].plot(dim, fidelity, "o-", label=dataframe.name)
-        axs[0, 0].set_xlabel("N. of couplings")
-        axs[0, 0].set_ylabel("Fidelity")
-        axs[0, 0].grid(True)
-        # Plot column 1 vs column 3
-        axs[0, 1].plot(dim, time, "o-")
-        axs[0, 1].set_xlabel("N. of couplings")
-        axs[0, 1].set_ylabel("CPU Time")
-        axs[0, 1].grid(True)
-
-        # Plot column 1 vs column 4
-        axs[1, 0].plot(dim, generations, "o-")
-        axs[1, 0].set_xlabel("N. of couplings")
-        axs[1, 0].set_ylabel("Generations")
-        axs[1, 0].grid(True)
-
-        # Hide the empty subplot
-        axs[1, 1].axis("off")
-
-    # Adjust the spacing between subplots
-    fig.tight_layout(h_pad=5, w_pad=2)
-    fig.legend(loc="center")
-
-    return True
-
-
-def fix_delta_plot(dataframes, delta, att="fidelity"):
-    """
-    For a fixed delta value, plots one attribute of
-    the results for chains with different number of
-    couplings.
-
-    Parameters:
-        - dataframes: list of dataframes to compare
-        - delta: anisotropy parameter
-        - att: attribute to plot (defaults to fidelity)
-    """
-    axs = plt.figure()
-
-    for dataframe in dataframes:
-        ndelta = dataframe[dataframe["delta"] == delta]
-
-        dim = ndelta["dimension"]
-        y = ndelta[att]
-
-        plt.plot(dim, y, "o-", label=dataframe.name, linewidth=4)
-        plt.xlabel("Dimension")
-        plt.ylabel(att)
-        plt.title("Delta = " + str(delta))
-        plt.tight_layout()
-        # Show the plot
-    plt.show()
-    plt.grid(True)
-    plt.legend()
-
-
-def fix_dim_plot(dataframes, dimension, att="fidelity"):
-    """
-    For a fixed length of chain value, plots one attribute of
-    the results for different values of delta (anisotropy)
-
-    Parameters:
-        - dataframes: list of dataframes to compare
-        - dimension: number of couplings in the chain
-        - att: attribute to plot (defaults to fidelity)
-    """
-    axs = plt.figure()
-
-    for dataframe in dataframes:
-        dim = dataframe[dataframe["dimension"] == dimension]
-
-        delta = dim["delta"]
-        y = dim[att]
-
-        plt.plot(delta, y, "o-", label=dataframe.name, linewidth=4)
-        plt.xlabel("Delta")
-        plt.ylabel(att)
-
-        plt.tight_layout()
-        # Show the plot
-    plt.show()
-    plt.grid(True)
-    plt.legend()
-
-
-# for average.py (statistical analysis)
-
+# for statistical analysis of results obtained using average.py
 
 def compare_mean(
     dataframes,
@@ -870,7 +720,7 @@ def access_best_solutions(
     for dimension in dimensions:
         ndim = dataframe[dataframe["dimension"] == dimension]
         ndim = ndim.reset_index()
-        max_value_index_j_1 = ndim["fidelity"].idxmax() #- dimension + 20
+        max_value_index_j_1 = ndim["fidelity"].idxmax()  # - dimension + 20
         max_value_fidelity_j_1 = ndim["fidelity"].max()
         max_fidelity_solution_j_1 = (
             directory
