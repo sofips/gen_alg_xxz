@@ -149,7 +149,7 @@ def plot_all_samples(
         x = np.arange(1, len(data) + 1)
         y = data
         fid = fidelity(data, n, delta, transmission_time, beta_is_gene)
-        label = "Sample {} with fidelity = {}".format(sample, fid)
+        label = "Sample {} with Transm. Prob. = {}".format(sample, fid)
         if fid > fid_limit:
             ax.plot(x, y, "o-", label=label)
     if title:
@@ -283,9 +283,9 @@ def plot_spectrum(files, couplings=True, directory="", delta=1.0):
 
             # Create a scatter plot
             axs[j, k].set_xlabel("i")
-            axs[j, k].set_ylabel("E_i")
+            axs[j, k].set_ylabel("$E_i$")
             axs[j, k].legend()
-            axs[j, k].set_title("spectrum for " + file)
+            axs[j, k].set_title("Spectrum for file: \n " + file)
             # plt.show()
             j = j + k
             k = (k + 1) % 2
@@ -299,14 +299,14 @@ def plot_spectrum(files, couplings=True, directory="", delta=1.0):
 
             # Create a scatter plot
             axs[i].set_xlabel("i")
-            axs[i].set_ylabel("E_i")
+            axs[i].set_ylabel("$E_i$")
             axs[i].legend()
-            axs[i].set_title("spectrum for " + file)
+            axs[i].set_title("Spectrum for file: \n" + file)
 
             i += 1
             # plt.show()
 
-    fig.tight_layout(h_pad=2, w_pad=2)
+    fig.tight_layout(h_pad=3, w_pad=2)
 
 
 def plot_energy_differences(
@@ -368,7 +368,7 @@ def plot_energy_differences(
 
 # ###################### section 2 ###################################
 # Functions to plot general attributes of solutions such as
-# fidelity, CPU time and generations. These functions take
+# Transmission Probability, CPU time and generations. These functions take
 # dataframes summarizing different runs of main programs.
 ####################################################################
 
@@ -510,7 +510,7 @@ def summary_graph(
     """
     For a given dataframe plots a 'summary' the associated genetic algorithm run.
 
-    Plot #1: Mean fidelity with standard deviation. Max and min scatter plots with
+    Plot #1: Mean Transmission Probability with standard deviation. Max and min scatter plots with
     color coded points associated to the generations needed to obtain that result.
 
     Plot #2: Mean, max and min CPU time employed for every dimension.
@@ -571,7 +571,7 @@ def summary_graph(
         stats["mean fidelity"],
         yerr=stats["sd fidelity"],
         fmt="o",
-        label="average fidelity",
+        label="Average Transm. Prob.",
         capsize=4,
         zorder=-2,
     )
@@ -584,7 +584,7 @@ def summary_graph(
         filtered_max["dimension"],
         filtered_max["fidelity"],
         "--",
-        label="max fidelity",
+        label="max Transm. Prob.",
         linewidth=1.5,
         color="black",
         zorder=-1,
@@ -608,7 +608,7 @@ def summary_graph(
         filtered_min["dimension"],
         filtered_min["fidelity"],
         "--",
-        label="min fidelity",
+        label="Min Transm. Prob.",
         linewidth=1.5,
         color="grey",
         zorder=-1,
@@ -627,9 +627,9 @@ def summary_graph(
     plt.ylim(ylim_min, ylim_max)
     # Add labels and title
     plt.xlabel("N")
-    plt.ylabel("fidelity")
+    plt.ylabel("Transmission Probability")
     if title:
-        plt.title(title + " (Fidelity)")
+        plt.title(title + " (Transmission Probability)")
 
     plt.grid(True)
     plt.legend()
@@ -733,7 +733,7 @@ def access_best_solutions(
 
         label = (
             extra_label
-            + "fidelity ="
+            + "Transm. Prob. ="
             + str(max_value_fidelity_j_1)
             + ", N = "
             + str(dimension)
