@@ -28,6 +28,8 @@ These programs use PyGAD library [3] to implement genetic algorithms. The coupli
 - gmod.py: module containing genetic algorithm related functions such as mutations, fitness functions, generation of genespaces, etc.
   
 - ga_graphs.py: module containing different plotting functions to analyze obtained results.
+
+- example.ipynb: Notebook with sample commands and a brief description of how to implement the scripts listed above.
   
 ## References
 [1] - G. M. Nikolopoulos and I. Jex, Quantum State Transfer and Network Engineering. Berlin Springer, 2016
