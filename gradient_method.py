@@ -143,7 +143,7 @@ def diag_hxxz(J, n, delta=1.0):
 alpha = 0.05
 tol = 1e-3
 nmax = 40
-kmax = 1000000
+kmax = 100000
 
 delta = 1.
 
@@ -169,7 +169,6 @@ for nj in range(3,nmax):
         J[m] -= alpha*gm
 
         nfidelity = fidelity(J,nh,delta=delta,time=time)
-        print(f'{k},{nfidelity}')
         # with open(f'fidelity_evolution_{nj}.txt','a') as f:
         #     f.write(f'{k},{nfidelity}\n')
  
@@ -183,5 +182,5 @@ for nj in range(3,nmax):
     #     print(f'final J: {J}')
     J0 = J
     with open(f'final_fidelity.txt','a') as f:
-        f.write(f'{nj},{nfidelity},t2-t1,t2-t0\n')
+        f.write(f'{nj},{nfidelity},{t2-t1} ,{t2-t0}\n')
         print(f'{nj},{nfidelity}')
