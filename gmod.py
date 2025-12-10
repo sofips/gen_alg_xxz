@@ -153,7 +153,7 @@ def closest_odd_integer(number):
         return next_odd
 
 
-def generate_gsp1(n, maxj, b_is_gene=False):
+def generate_gsp1(n, maxj, b_is_gene=False, reflect_couplings=True):
     """
     Generation of genespace
     Parameters:
@@ -164,7 +164,7 @@ def generate_gsp1(n, maxj, b_is_gene=False):
     """
     genespace = []
 
-    nj_genes = (n - 1) // 2 + (1 - n % 2)
+    nj_genes = (n - 1) // 2 + (1 - n % 2) if reflect_couplings else n - 1
 
     for i in range(0, nj_genes):
         genespace = genespace + [{"low": 0, "high": maxj}]
@@ -186,6 +186,7 @@ def generation_func(
     directory,
     erase_last_gene=False,
     histogram=False,
+    reflect_couplings=True,
 ):
     pop = ga.population
 
@@ -204,7 +205,7 @@ def generation_func(
 
     solution, solution_fitness, solution_idx = ga.best_solution()
 
-    fid = fidelity(solution, n, delta, time, erase_last_gene)
+    fid = fidelity(solution, n, delta, time, erase_last_gene, reflect_couplings=reflect_couplings)
 
     if histogram and (
         ga.generations_completed == 1 or ga.generations_completed % 5 == 0
@@ -260,7 +261,7 @@ def reflect(J, n):
     return JJ
 
 
-def hxxz(J, n, delta=1.0):
+def hxxz(J, n, delta=1.0, reflect_couplings=True):
     """
     Constructs XXZ Hamiltonian in the one-excitation basis
     from first half of couplings (full chain is symmetric).
@@ -271,12 +272,14 @@ def hxxz(J, n, delta=1.0):
         - J: First half of couplings
         - n: length of the chain
         - delta: anisotropy parameter
+        - reflect_couplings: whether to reflect the couplings
+            to create a symmetric chain
     Returns:
         - H: nxn array containing XXZ Hamiltonian
     """
 
     H = np.full((n, n), 0.0)
-    JJ = reflect(J, n)
+    JJ = reflect(J, n) if reflect_couplings else J
     sumj = -0.25 * np.sum(JJ)
 
     for i in range(0, n):
@@ -296,7 +299,7 @@ def hxxz(J, n, delta=1.0):
     return H
 
 
-def diag_hxxz(J, n, delta=1.0):
+def diag_hxxz(J, n, delta=1.0, reflect_couplings=True):
     """
     Diagonzalizes XXZ Hamiltonian in the one-excitation basis
     from first half of couplings (full chain is symmetric).
@@ -317,7 +320,7 @@ def diag_hxxz(J, n, delta=1.0):
         eigenvectors as columns
     """
 
-    JJ = reflect(J, n)
+    JJ = reflect(J, n) if reflect_couplings else J
 
     sumj = -0.25 * np.sum(JJ)
 
@@ -351,7 +354,7 @@ def diag_hxxz(J, n, delta=1.0):
 #################################################################
 
 
-def fidelity(J, n, delta=1.0, time=False, erase_last_gene=False):
+def fidelity(J, n, delta=1.0, time=False, erase_last_gene=False, reflect_couplings = True):
     """
     Returns transmission probability (|<1|n>|²) for an XXZ
     Hamiltonian in the one-excitation basis for a given set
@@ -376,7 +379,7 @@ def fidelity(J, n, delta=1.0, time=False, erase_last_gene=False):
     if erase_last_gene:
         J = J[:-1]
 
-    (eigvals, eigvects) = diag_hxxz(J, n, delta)
+    (eigvals, eigvects) = diag_hxxz(J, n, delta, reflect_couplings=reflect_couplings)
 
     n = eigvals.size
 
@@ -406,7 +409,7 @@ def fidelity(J, n, delta=1.0, time=False, erase_last_gene=False):
     return F
 
 
-def fidelity_with_eig(J, n, delta=1.0, time=False, erase_last_gene=False):
+def fidelity_with_eig(J, n, delta=1.0, time=False, erase_last_gene=False, reflect_couplings = True):
     """
     Calculates transmission probability (|<1|n>|²) for an XXZ
     Hamiltonian in the one-excitation basis for a given set
@@ -434,7 +437,7 @@ def fidelity_with_eig(J, n, delta=1.0, time=False, erase_last_gene=False):
     if erase_last_gene:
         J = J[:-1]
 
-    (eigvals, eigvects) = diag_hxxz(J, n, delta)
+    (eigvals, eigvects) = diag_hxxz(J, n, delta, reflect_couplings=reflect_couplings)
 
     n = eigvals.size
 
@@ -464,7 +467,7 @@ def fidelity_with_eig(J, n, delta=1.0, time=False, erase_last_gene=False):
     return F, eigvals, eigvects
 
 
-def j_fidelity(J, n, delta=1.0, time=False, b_is_gene=False, b=0.9):
+def j_fidelity(J, n, delta=1.0, time=False, b_is_gene=False, b=0.9, reflect_couplings=True):
     """
     Fitness function based on transmission probability (|<1|n>|²) for an XXZ
     Hamiltonian in the one-excitation basis for a given set
@@ -492,7 +495,7 @@ def j_fidelity(J, n, delta=1.0, time=False, b_is_gene=False, b=0.9):
         b = J[-1]
         J = J[:-1]
 
-    (eigvals, eigvects) = diag_hxxz(J, n, delta)
+    (eigvals, eigvects) = diag_hxxz(J, n, delta, reflect_couplings=reflect_couplings)
 
     n = eigvals.size
 
@@ -534,7 +537,7 @@ def j_fidelity(J, n, delta=1.0, time=False, b_is_gene=False, b=0.9):
     return f
 
 
-def j_mean_fidelity(J, n, delta=1.0, time=False, b_is_gene=False, b=0.9):
+def j_mean_fidelity(J, n, delta=1.0, time=False, b_is_gene=False, b=0.9, reflect_couplings=True):
     """
     Fitness function based on transmission probability (|<1|n>|²) for an XXZ
     Hamiltonian in the one-excitation basis for a given set
@@ -562,7 +565,7 @@ def j_mean_fidelity(J, n, delta=1.0, time=False, b_is_gene=False, b=0.9):
         b = J[-1]
         J = J[:-1]
 
-    (eigvals, eigvects) = diag_hxxz(J, n, delta)
+    (eigvals, eigvects) = diag_hxxz(J, n, delta, reflect_couplings=reflect_couplings)
 
     n = eigvals.size
 
@@ -604,7 +607,7 @@ def j_mean_fidelity(J, n, delta=1.0, time=False, b_is_gene=False, b=0.9):
     return f
 
 
-def j_meansq_fidelity(J, n, delta=1.0, time=False, b_is_gene=False, b=0.9):
+def j_meansq_fidelity(J, n, delta=1.0, time=False, b_is_gene=False, b=0.9, reflect_couplings=True):
     """
     Fitness function based on transmission probability (|<1|n>|²) for an XXZ
     Hamiltonian in the one-excitation basis for a given set
@@ -632,7 +635,7 @@ def j_meansq_fidelity(J, n, delta=1.0, time=False, b_is_gene=False, b=0.9):
         b = J[-1]
         J = J[:-1]
 
-    (eigvals, eigvects) = diag_hxxz(J, n, delta)
+    (eigvals, eigvects) = diag_hxxz(J, n, delta, reflect_couplings=reflect_couplings)
 
     n = eigvals.size
 

@@ -14,7 +14,7 @@ directory = sys.argv[2]
 script = "average.py"
 module = "gmod.py"
 
-number_of_samples = 10  # number of times the experiment is repeated
+number_of_samples = 50  # number of times the experiment is repeated
 
 # creates instance of ConfigParser
 config = configparser.ConfigParser()
@@ -22,9 +22,9 @@ config = configparser.ConfigParser()
 # system parameters
 n = int(sys.argv[1])
 number_of_couplings = n - 1
-delta = 1.0
+delta = 0.0
 transmission_time = n
-
+reflect_couplings = True  # mark as true to force center-symmetric chains
 
 
 # genetic algorithm parameters (used by PyGAD library, see Documentation)
@@ -35,12 +35,16 @@ init_range_low = 1.0
 init_range_high = maxj
 fidelity_tolerance = 0.99
 saturation = 20
-smooth_solution = True # mark as true to add smoothing factor to fitness
+smooth_solution = False # mark as true to add smoothing factor to fitness
 
 # if using smooth_solution, configure smoothing weight (if not these parameters are ignored)
 beta_is_gene = False  # if True, take weight factor as gene
 beta = 0.9  # else, fix weight factor
-num_genes = number_of_couplings // 2 + (1 - n % 2) + 1 * beta_is_gene
+
+if reflect_couplings:
+    num_genes = number_of_couplings // 2 + (1 - n % 2) + 1 * beta_is_gene
+else:
+    num_genes = number_of_couplings + 1 * beta_is_gene
 
 # crossover and parent selection (used by PyGAD library, see Documentation)
 num_parents_mating = sol_per_pop // 5
@@ -76,6 +80,7 @@ config["system_parameters"] = {
     "n": str(n),
     "delta": str(delta),
     "transmission_time": str(transmission_time),
+    "reflect_couplings": str(reflect_couplings)
 }
 
 config["ga_initialization"] = {

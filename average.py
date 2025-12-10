@@ -38,6 +38,7 @@ nj = config.getint("system_parameters", "number_of_couplings")
 n = config.getint("system_parameters", "n")
 delta = config.getfloat("system_parameters", "delta")
 transmission_time = config.getfloat("system_parameters", "transmission_time")
+reflect_couplings = config.getboolean("system_parameters", "reflect_couplings")
 
 # genetic algorithm parameters
 num_generations = config.getint("ga_initialization", "num_generations")
@@ -92,6 +93,7 @@ on_generation_parameters = [
     dirname,
     beta_is_gene,
     histogram,
+    reflect_couplings
 ]
 
 # call construction functions
@@ -99,11 +101,11 @@ on_generation = generation_func_constructor(generation_func, on_generation_param
 mutation_type = mutation_func_constructor(adaptivemut, mutation_args)
 
 if smooth_solution:
-    fidelity_args = [n, delta, transmission_time, beta_is_gene, beta]
+    fidelity_args = [n, delta, transmission_time, beta_is_gene, beta, reflect_couplings]
     fitness_func = fitness_func_constructor(j_fidelity, fidelity_args)
     print('Using transmission probability with extra smoothness factor as fitness')
 else:
-    fidelity_args = [n, delta, transmission_time, beta_is_gene]
+    fidelity_args = [n, delta, transmission_time, beta_is_gene, reflect_couplings]
     fitness_func = fitness_func_constructor(fidelity, fidelity_args)
     print('Using transmission probability as fitness')
 
@@ -112,7 +114,7 @@ else:
 
 
 
-genespace = generate_gsp1(n, maxj, beta_is_gene)
+genespace = generate_gsp1(n, maxj, beta_is_gene, reflect_couplings=reflect_couplings)
 stop_criteria = ["saturate_" + str(saturation), "reach_" + str(fidelity_tolerance)]
 
 
@@ -157,7 +159,7 @@ with open(filename, "a") as f:
         trun = t2 - t1
         maxg = initial_instance.generations_completed
 
-        final_fidelity = fidelity(solution, n, delta, transmission_time, beta_is_gene)
+        final_fidelity = fidelity(solution, n, delta, transmission_time, beta_is_gene, reflect_couplings=reflect_couplings)
 
         row = [
             n,
